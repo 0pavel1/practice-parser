@@ -1,0 +1,25 @@
+
+services:
+  front:
+    build:
+      context: ./front
+    ports:
+      - "3000:3000"
+
+  back:
+    build: ./back
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15.6
+    environment:
+      POSTGRES_DB: myapp
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d
+    ports:
+      - "5001:5432"
