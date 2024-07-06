@@ -123,3 +123,31 @@ body {
   margin: 10px 0 10px 0;
   padding: 10px;
 }
+
+.pagination {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.page-item {
+  margin: 0 5px;
+}
+
+.page-link {
+  padding: 5px 10px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.page-link:hover {
+  background-color: #f0f0f0;
+}
+
+.active .page-link {
+  background-color: #007bff;
+  color: white;
+  border: 1px solid #007bff;
+}

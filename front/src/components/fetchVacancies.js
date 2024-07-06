@@ -1,29 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { url } from "./const.js";
+import ReactPaginate from 'react-paginate';
+import { url_serv } from "./const.js";
 
 function FetchVacancies() {
   const [text, setText] = useState('');
   const [area, setArea] = useState(1);
   const [perPage, setPerPage] = useState(20);
+  const [salary, setSalary] = useState(0);
+  const [schedule, setSchedule] = useState("");
+  const [page, setPage] = useState(1);
   const [vacancies, setVacancies] = useState([]);
   const [expandedId, setExpandedId] = useState(null);
+  const [pageCount, setPageCount] = useState(0);
 
   const toggleDescription = (id) => {
     setExpandedId(expandedId === id ? null : id);
   };
 
   const handleFetchVacancies = async (e) => {
-    e.preventDefault();
-    const query = { text, area, per_page: perPage };
+    if (e) e.preventDefault();
+    const query = { text: text, area: area, per_page: perPage, page: page, salary: salary, schedule: schedule};
 
     try {
-      const response = await axios.post(url + '/fetch-vacancies/', query);
-      setVacancies(response.data);
+      const response = await axios.post(url_serv + '/fetch-vacancies/', query);
+      const vacancies = response.data;
+      setVacancies(vacancies);
+      setPageCount(20);
     } catch (error) {
       console.error('Ошибка при получении вакансий с сервера:', error);
     }
   };
+
+  const handlePageClick = (event) => {
+    setPage(event.selected + 1);
+  };
+
+  const clickLoad = () => {
+    setPage(1);
+  }
+
+  useEffect(() => {
+    if (pageCount!==0) {
+      handleFetchVacancies();
+    }
+  }, [page]);
 
   return (
     <div className="mt-4">
@@ -138,6 +159,30 @@ function FetchVacancies() {
           </select>
         </div>
         <div className="form-group">
+          <label>Размер заработной платы:</label>
+          <input
+            type="number"
+            className="form-control"
+            value={salary}
+            onChange={(e) => setSalary(e.target.value)}
+          />
+        </div>
+        <div className="form-group">
+          <label>График работы:</label>
+          <select
+            className="form-control"
+            value={schedule}
+            onChange={(e) => setSchedule(e.target.value)}
+          >
+            <option value="">Нет</option>
+            <option value="fullDay">Полный день</option>
+            <option value="shift">Сменный график</option>
+            <option value="flexible">Гибкий график</option>
+            <option value="remote">Удаленная работа</option>
+            <option value="flyInFlyOut">Вахтовый метод</option>
+          </select>
+        </div>
+        <div className="form-group">
           <label>Количество результатов на страницу:</label>
           <input
             type="number"
@@ -146,26 +191,58 @@ function FetchVacancies() {
             onChange={(e) => setPerPage(e.target.value)}
           />
         </div>
-        <button type="submit" className="btn btn-primary">Загрузить вакансии</button>
+        <button type="submit" className="btn btn-primary" onClick={clickLoad}>Загрузить вакансии</button>
       </form>
 
       <h3 className="mt-4">Список загруженных вакансий:</h3>
       <ul className="list-group">
-        {vacancies.map((vacancy) => (
-          <li key={vacancy.id} className="list-group-item">
-            <strong>{vacancy.job_title}</strong> - {vacancy.salary}
-            <button
-              className="btn btn-link"
-              onClick={() => toggleDescription(vacancy.id)}
-            >
-              {expandedId === vacancy.id ? 'Свернуть' : 'Развернуть'}
-            </button>
-            {expandedId === vacancy.id && (
-              <div className="requirements">{vacancy.requirements}</div>
-            )}
-          </li>
-        ))}
+        {vacancies && vacancies.length > 0 ? (
+          vacancies.map((vacancy) => (
+            <li key={vacancy.id} className="list-group-item">
+              <strong>{vacancy.job_title}</strong> - {vacancy.salary}
+              <button
+                className="btn btn-link"
+                onClick={() => toggleDescription(vacancy.id)}
+              >
+                {expandedId === vacancy.id ? 'Свернуть' : 'Развернуть'}
+              </button>
+              {expandedId === vacancy.id && (
+                <div className="requirements">
+                  {vacancy.requirements}
+                  <div>Работодатель: <strong>{vacancy.company}</strong></div>
+                  <div>Тип занятости: <strong>{vacancy.work_format}</strong></div>
+                  <form action={vacancy.url} target="_blank">
+                    <button className='btn btn-link'>Перейти к вакансии</button>
+                  </form>
+                </div>
+              )}
+            </li>
+          ))
+        ) : (
+          <li className="list-group-item">Вакансии не найдены</li>
+        )}
       </ul>
+      {vacancies && vacancies.length > 0 && (
+        <ReactPaginate
+          breakLabel="..."
+          nextLabel=">"
+          onPageChange={handlePageClick}
+          pageRangeDisplayed={3}
+          pageCount={pageCount}
+          previousLabel="<"
+          renderOnZeroPageCount={null}
+          containerClassName="pagination"
+          pageClassName="page-item"
+          pageLinkClassName="page-link"
+          previousClassName="page-item"
+          previousLinkClassName="page-link"
+          nextClassName="page-item"
+          nextLinkClassName="page-link"
+          breakClassName="page-item"
+          breakLinkClassName="page-link"
+          activeClassName="active"
+        />
+      )}
     </div>
   );
 }

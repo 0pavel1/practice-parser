@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { url } from "./const.js";
+import { url_serv } from "./const.js";
 
 function Analytics() {
   const [analytics, setAnalytics] = useState({ vacancies: 0 });
 
   useEffect(() => {
     const fetchAnalytics = async () => {
-      const result = await axios.get(url + '/analytics/');
+      const result = await axios.get(url_serv + '/analytics/');
       setAnalytics(result.data);
     };
     fetchAnalytics();

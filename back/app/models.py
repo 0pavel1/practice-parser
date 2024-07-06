@@ -9,9 +9,6 @@ class Vacancy(Base):
     requirements = Column(Text)
     salary = Column(String)
     work_format = Column(String)
+    url = Column(Text)
+    company = Column(Text)
 
-class CandidateVacancy(Base):
-    __tablename__ = "candidate_vacancy"
-
-    candidate_id = Column(Integer, ForeignKey("candidates.id"), primary_key=True)
-    vacancy_id = Column(Integer, ForeignKey("vacancies.id"), primary_key=True)
